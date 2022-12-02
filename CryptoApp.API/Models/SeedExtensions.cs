@@ -16,6 +16,14 @@ namespace CryptoApp.API.Models
                     roleManager.CreateAsync(new IdentityRole(UserRoles.Admin)).Wait();
                 if (!roleManager.RoleExistsAsync(UserRoles.AppUser).Result)
                     roleManager.CreateAsync(new IdentityRole(UserRoles.AppUser)).Wait();
+
+                var adminUser = new User
+                {
+                    UserName = "admin",
+                    Email = "admin@gmail.com"
+                };
+
+                userManager.CreateAsync(adminUser, "Admin123!").Wait();
             }
 
             return host;

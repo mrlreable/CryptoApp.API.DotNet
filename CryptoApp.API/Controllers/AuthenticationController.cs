@@ -11,7 +11,7 @@ using System.Text;
 
 namespace CryptoApp.API.Controllers
 {
-    [Route("api")]
+    [Route("api/account/")]
     [ApiController]
     public class AuthenticationController : ControllerBase
     {
@@ -26,10 +26,10 @@ namespace CryptoApp.API.Controllers
             _configuration = configuration ?? throw new ArgumentNullException(nameof(configuration));
         }
 
-        [HttpPost("account/register")]
-        public async Task<IActionResult> RegisterAsync(RegisterDto registerDto)
+        [HttpPost("register")]
+        public async Task<IActionResult> RegisterAsync([FromBody] RegisterDto registerDto)
         {
-            var existingUser = await _userManager.FindByEmailAsync(registerDto.Email);
+            var existingUser = await _userManager.FindByNameAsync(registerDto.UserName);
 
             if (existingUser != null)
             {
@@ -39,26 +39,27 @@ namespace CryptoApp.API.Controllers
 
             var newUser = new User
             {
+                UserName = registerDto.UserName,
                 Email = registerDto.Email,
                 SecurityStamp = Guid.NewGuid().ToString()
             };
 
-            var isSuccessful = await _userManager.CreateAsync(newUser, registerDto.Password);
+            var result = await _userManager.CreateAsync(newUser, registerDto.Password);
 
-            if (!isSuccessful.Succeeded)
+            if (!result.Succeeded)
             {
                 return StatusCode(StatusCodes.Status500InternalServerError,
-                    new { Status = "Error", Message = "Error during user creation." });
+                    new { Status = "Error", Message = "Error during user creation.", InnerException = $"{result.Errors.FirstOrDefault()}" });
             }
 
             return Ok(new { Status = "Success", Message = "User successfully created." });
         }
 
-        [HttpGet("account/login")]
-        public async Task<IActionResult> LoginAsync(LoginDto loginDto)
+        [HttpGet("login")]
+        public async Task<IActionResult> LoginAsync([FromQuery] LoginDto loginDto)
         {
             // Find user by email
-            var user = await _userManager.FindByNameAsync(loginDto.Email);
+            var user = await _userManager.FindByNameAsync(loginDto.UserName);
 
             // If user exists and password is correct, authorize, give claims, token
             if (user != null && await _userManager.CheckPasswordAsync(user, loginDto.Password))

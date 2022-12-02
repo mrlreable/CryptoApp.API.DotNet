@@ -1,8 +1,9 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
 
 namespace CryptoApp.API.Models
 {
-    public class CryptoContext : DbContext
+    public class CryptoContext : IdentityDbContext<User>
     {
         public CryptoContext(DbContextOptions<CryptoContext> options) : base(options)
         {
