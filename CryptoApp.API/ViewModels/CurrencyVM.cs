@@ -1,7 +1,7 @@
 ﻿
 namespace CryptoApp.API.ViewModels
 {
-    public class CurrencyVM
+    public class CurrencyVM : IEntityVM
     {
         public int Id { get; set; }
         public string Name { get; set; }

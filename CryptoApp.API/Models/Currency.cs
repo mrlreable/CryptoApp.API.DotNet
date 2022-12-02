@@ -13,5 +13,6 @@ namespace CryptoApp.API.Models
         public virtual string? MinorUnit { get; set; }
         public virtual string? CentralBank { get; set; }
         public virtual ICollection<UserCurrency> UserCurrencies { get; set; }
+        public virtual ICollection<Wallet> Wallets { get; set; }
     }
 }

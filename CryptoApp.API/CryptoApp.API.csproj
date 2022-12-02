@@ -21,9 +21,11 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Filter\" />
     <Folder Include="Profiles\" />
-    <Folder Include="Services\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\CryptoApp.Common\CryptoApp.Common.csproj" />
   </ItemGroup>
 
 </Project>

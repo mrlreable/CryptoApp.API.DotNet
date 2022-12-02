@@ -60,5 +60,6 @@ namespace CryptoApp.API.Models
         public DbSet<UserCrypto> UserCryptoCurrencies { get; set; }
         public DbSet<UserCurrency> UserCurrencies { get; set; }
         public DbSet<UserStock> UserStocks { get; set; }
+        public DbSet<Wallet> Wallets { get; set; }
     }
 }

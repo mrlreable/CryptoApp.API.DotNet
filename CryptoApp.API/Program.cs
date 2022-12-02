@@ -1,4 +1,7 @@
+using AutoMapper;
+using CryptoApp.API.Dtos;
 using CryptoApp.API.Models;
+using CryptoApp.API.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -81,6 +84,8 @@ builder.Services.AddSwaggerGen(option =>
         }
     });
 });
+
+builder.Services.AddTransient<WalletService, WalletService>();
 
 
 var app = builder.Build();
