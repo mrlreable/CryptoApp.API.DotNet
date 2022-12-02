@@ -21,7 +21,7 @@ builder.Logging.AddSerilog(logger);
 builder.Services.AddControllers();
 builder.Services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
 builder.Services.AddDbContext<CryptoContext>(opt =>
-    opt.UseSqlServer(builder.Configuration.GetConnectionString("RecipeBook")));
+    opt.UseSqlServer(builder.Configuration.GetConnectionString("CryptoContext")));
 
 //  For identity
 builder.Services.AddIdentity<User, IdentityRole>()
@@ -84,6 +84,7 @@ builder.Services.AddSwaggerGen(option =>
 
 
 var app = builder.Build();
+app.Seed();
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
