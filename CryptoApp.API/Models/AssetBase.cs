@@ -8,7 +8,7 @@ namespace CryptoApp.API.Models
         public virtual int Id { get; set; }
         [Required, MaxLength(50)]
         public virtual string Name { get; set; }
-        [Required, MaxLength(5)]
+        [Required, MaxLength(7)]
         public virtual string ShortName { get; set; }
         [Required]
         public virtual bool IsSupported { get; set; }

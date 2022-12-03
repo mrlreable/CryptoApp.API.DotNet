@@ -1,6 +1,6 @@
 ﻿namespace CryptoApp.API.ViewModels
 {
-    public interface IEntityVM
+    public interface IAssetVM
     {
     }
 }

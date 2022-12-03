@@ -1,6 +1,6 @@
 ﻿namespace CryptoApp.API.ViewModels
 {
-    public class NewsVM : IEntityVM
+    public class NewsVM
     {
         public virtual int Id { get; set; }
         public virtual string Label { get; set; }

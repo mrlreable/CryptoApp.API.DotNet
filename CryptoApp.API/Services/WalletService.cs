@@ -4,6 +4,7 @@ using CryptoApp.API.Models;
 using CryptoApp.API.ViewModels;
 using Microsoft.EntityFrameworkCore;
 using System.Linq.Expressions;
+using System.Security.Claims;
 
 namespace CryptoApp.API.Services
 {
@@ -18,24 +19,45 @@ namespace CryptoApp.API.Services
             _mapper = mapper;
         }
 
-        public async Task<WalletsVM> CreateAsync(NewWalletDto r)
+        public async Task<WalletsVM> CreateAsync(string userId, NewWalletDto r)
         {
-            var currency = await _context.Currencies
-                .Where(x => x.ShortName == r.Currency)
-                .SingleOrDefaultAsync();
+            try
+            {
+                var currency = await _context.Currencies
+                    .Where(x => x.ShortName == r.Currency)
+                    .SingleOrDefaultAsync();
 
-            if (currency == null)
+                var wallet = await _context.Wallets.Where(x => x.CardNumber == r.CardNumber).SingleOrDefaultAsync();
+
+                if (currency == null || wallet != null)
+                    return null;
+
+                var entity = new Wallet
+                {
+                    CardNumber = r.CardNumber,
+                    Cardholder = r.Cardholder,
+                    ExpirationDate = r.ExpirationDate,
+                    Balance = r.Balance,
+                    Currency = currency,
+                    UserId = userId,
+                };
+
+                _context.Add(entity);
+                await _context.SaveChangesAsync();
+
+                return new WalletsVM
+                {
+                    CardNumber= entity.CardNumber,
+                    Cardholder= entity.Cardholder,
+                    ExpirationDate = entity.ExpirationDate,
+                    Balance = entity.Balance,
+                    Currency = entity.Currency.ShortName
+                };
+            }
+            catch (Exception ex)
+            {
                 return null;
-
-            var entity = _mapper.Map<Wallet>(r);
-
-            _context.Add(entity);
-            await _context.SaveChangesAsync();
-
-            var m = _mapper.Map<WalletsVM>(entity);
-            m.Currency = currency.ShortName;
-
-            return m;
+            }
         }
 
         public Task<bool> DeleteAsync(int id)
@@ -43,7 +65,7 @@ namespace CryptoApp.API.Services
             throw new NotImplementedException();
         }
 
-        public Task<List<TEntityVM>> GetAllAsync<TEntityVM>() where TEntityVM : IEntityVM
+        public Task<List<TEntityVM>> GetAllAsync<TEntityVM>() where TEntityVM : IAssetVM
         {
             throw new NotImplementedException();
         }
@@ -57,7 +79,7 @@ namespace CryptoApp.API.Services
         }
 
         public Task<List<TEntityVM>> GetWhereAsync<TEntityVM, TEntity>(Expression<Func<TEntity, bool>> predicate)
-            where TEntityVM : IEntityVM
+            where TEntityVM : IAssetVM
             where TEntity : class
         {
             throw new NotImplementedException();

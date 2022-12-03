@@ -1,6 +1,6 @@
 ﻿namespace CryptoApp.API.ViewModels
 {
-    public class StockVM : IEntityVM
+    public class StockVM : IAssetVM
     {
         public virtual int Id { get; set; }
         public virtual string Name { get; set; }

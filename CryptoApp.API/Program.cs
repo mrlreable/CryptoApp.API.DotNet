@@ -86,7 +86,8 @@ builder.Services.AddSwaggerGen(option =>
 });
 
 builder.Services.AddTransient<WalletService, WalletService>();
-
+builder.Services.AddTransient<UserAssetService, UserAssetService>();
+builder.Services.AddScoped<UserManager<User>>();
 
 var app = builder.Build();
 app.Seed();

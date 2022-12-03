@@ -4,6 +4,7 @@ using CryptoApp.API.Models;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,10 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace CryptoApp.API.Migrations
 {
     [DbContext(typeof(CryptoContext))]
-    partial class CryptoContextModelSnapshot : ModelSnapshot
+    [Migration("20221203103507_DBSeeding")]
+    partial class DBSeeding
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -245,7 +247,7 @@ namespace CryptoApp.API.Migrations
                         {
                             Id = 1,
                             Content = "There’s no way around it — November was a rough month for crypto. Markets are down, lenders and funds are dropping like flies, and the bear market vibes are in full effect. As we continue to wade through the wreckage of FTX and Alameda, it’s clear some communities were hit a lot harder than others. This week, we dive into the tough times that have hit the Solana ecosystem, digging into how exactly the network is struggling and where the community is showing resilience.",
-                            CreatedAt = new DateTime(2022, 12, 3, 20, 9, 28, 520, DateTimeKind.Local).AddTicks(491),
+                            CreatedAt = new DateTime(2022, 12, 3, 11, 35, 6, 813, DateTimeKind.Local).AddTicks(993),
                             CreatedById = "4a3bb735-a5bf-469d-a60d-f0f8eac836eb",
                             Label = "Crypto",
                             Title = "Is Solana Dead?"
@@ -470,8 +472,8 @@ namespace CryptoApp.API.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"), 1L, 1);
 
-                    b.Property<double>("Balance")
-                        .HasColumnType("float");
+                    b.Property<float>("Balance")
+                        .HasColumnType("real");
 
                     b.Property<string>("CardNumber")
                         .IsRequired()
@@ -633,21 +635,6 @@ namespace CryptoApp.API.Migrations
                     b.ToTable("AspNetUserTokens", (string)null);
                 });
 
-            modelBuilder.Entity("StockUser", b =>
-                {
-                    b.Property<int>("StocksId")
-                        .HasColumnType("int");
-
-                    b.Property<string>("UsersId")
-                        .HasColumnType("nvarchar(450)");
-
-                    b.HasKey("StocksId", "UsersId");
-
-                    b.HasIndex("UsersId");
-
-                    b.ToTable("StockUser");
-                });
-
             modelBuilder.Entity("CryptoApp.API.Models.CryptoCurrency", b =>
                 {
                     b.HasOne("CryptoApp.API.Models.User", "UpdatedBy")
@@ -733,13 +720,13 @@ namespace CryptoApp.API.Migrations
             modelBuilder.Entity("CryptoApp.API.Models.UserStock", b =>
                 {
                     b.HasOne("CryptoApp.API.Models.Stock", "Stock")
-                        .WithMany()
+                        .WithMany("UserStocks")
                         .HasForeignKey("StockId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.HasOne("CryptoApp.API.Models.User", "User")
-                        .WithMany()
+                        .WithMany("UserStocks")
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
@@ -819,21 +806,6 @@ namespace CryptoApp.API.Migrations
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("StockUser", b =>
-                {
-                    b.HasOne("CryptoApp.API.Models.Stock", null)
-                        .WithMany()
-                        .HasForeignKey("StocksId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("CryptoApp.API.Models.User", null)
-                        .WithMany()
-                        .HasForeignKey("UsersId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-                });
-
             modelBuilder.Entity("CryptoApp.API.Models.CryptoCurrency", b =>
                 {
                     b.Navigation("UserCryptos");
@@ -844,6 +816,11 @@ namespace CryptoApp.API.Migrations
                     b.Navigation("UserCurrencies");
 
                     b.Navigation("Wallets");
+                });
+
+            modelBuilder.Entity("CryptoApp.API.Models.Stock", b =>
+                {
+                    b.Navigation("UserStocks");
                 });
 
             modelBuilder.Entity("CryptoApp.API.Models.User", b =>
@@ -859,6 +836,8 @@ namespace CryptoApp.API.Migrations
                     b.Navigation("UserCryptos");
 
                     b.Navigation("UserCurrencies");
+
+                    b.Navigation("UserStocks");
 
                     b.Navigation("Wallets");
                 });

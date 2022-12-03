@@ -9,5 +9,6 @@ namespace CryptoApp.API.Models
         [Required]
         public virtual double Spread { get; set; }
         public virtual ICollection<UserStock> UserStocks { get; set; }
+        public virtual ICollection<User> Users { get; set; }
     }
 }

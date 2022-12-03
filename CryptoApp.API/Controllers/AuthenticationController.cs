@@ -44,12 +44,13 @@ namespace CryptoApp.API.Controllers
                 SecurityStamp = Guid.NewGuid().ToString()
             };
 
-            var result = await _userManager.CreateAsync(newUser, registerDto.Password);
+            var creationResult = await _userManager.CreateAsync(newUser, registerDto.Password);
+            var roleResult = await _userManager.AddToRoleAsync(newUser, UserRoles.AppUser);
 
-            if (!result.Succeeded)
+            if (!creationResult.Succeeded || !roleResult.Succeeded)
             {
                 return StatusCode(StatusCodes.Status500InternalServerError,
-                    new { Status = "Error", Message = "Error during user creation.", InnerException = $"{result.Errors.FirstOrDefault()}" });
+                    new { Status = "Error", Message = "Error during user creation.", InnerException = $"{creationResult.Errors.FirstOrDefault()}" });
             }
 
             return Ok(new { Status = "Success", Message = "User successfully created." });
@@ -66,8 +67,9 @@ namespace CryptoApp.API.Controllers
             {
                 var authClaims = new List<Claim>
                 {
+                    new Claim(ClaimTypes.NameIdentifier, user.Id),
                     new Claim(ClaimTypes.Email, user.UserName),
-                    new Claim(System.IdentityModel.Tokens.Jwt.JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString())
+                    new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString())
                 };
 
                 var userRoles = await _userManager.GetRolesAsync(user);

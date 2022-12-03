@@ -4,27 +4,27 @@ using System.Linq.Expressions;
 
 namespace CryptoApp.API.Services
 {
-    public interface IEntityService
+    public interface IAssetService
     {
         Task<TEntityVM> CreateAsync<TEntity, TEntityDto, TEntityVM>(TEntityDto r) 
             where TEntity : class
             where TEntityDto : IEntityDto
-            where TEntityVM : IEntityVM;
+            where TEntityVM : IAssetVM;
 
         Task<bool> DeleteAsync(int id);
 
         //Task<List<TEntityVM>> GetAllAsync(GenericQueryOption<RecipeFilter> options);
         Task<List<TEntityVM>> GetAllAsync<TEntityVM>()
-            where TEntityVM : IEntityVM;
+            where TEntityVM : IAssetVM;
 
         Task<TEntityVM> GetByIdAsync<TEntityVM>(int id)
-            where TEntityVM : IEntityVM;
+            where TEntityVM : IAssetVM;
 
         Task<List<TEntityVM>> GetWhereAsync<TEntityVM, TEntity>(Expression<Func<TEntity, bool>> predicate)
-            where TEntityVM : IEntityVM
+            where TEntityVM : IAssetVM
             where TEntity : class;
 
-        Task<bool> UpdateRecipeAsync<TEntityDto>(int id, TEntityDto r)
+        Task<bool> UpdateAsync<TEntityDto>(int id, TEntityDto r)
             where TEntityDto : IEntityDto;
     }
 }
