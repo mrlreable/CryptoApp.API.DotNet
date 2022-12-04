@@ -2,6 +2,7 @@
 using CryptoApp.API.Dtos;
 using CryptoApp.API.Models;
 using CryptoApp.API.ViewModels;
+using CryptoApp.Common;
 using Microsoft.EntityFrameworkCore;
 using System.Linq.Expressions;
 using System.Security.Claims;
@@ -19,7 +20,7 @@ namespace CryptoApp.API.Services
             _mapper = mapper;
         }
 
-        public async Task<WalletsVM> CreateAsync(string userId, NewWalletDto r)
+        public async Task<(WalletsVM? Vm, WalletState Message)> CreateAsync(string userId, NewWalletDto r)
         {
             try
             {
@@ -29,8 +30,11 @@ namespace CryptoApp.API.Services
 
                 var wallet = await _context.Wallets.Where(x => x.CardNumber == r.CardNumber).SingleOrDefaultAsync();
 
-                if (currency == null || wallet != null)
-                    return null;
+                if (currency == null)
+                    return (null, WalletState.CurrencyNotExist);
+
+                if (wallet != null)
+                    return (null, WalletState.WalletExists);
 
                 var entity = new Wallet
                 {
@@ -45,29 +49,57 @@ namespace CryptoApp.API.Services
                 _context.Add(entity);
                 await _context.SaveChangesAsync();
 
-                return new WalletsVM
+                var vm = new WalletsVM
                 {
-                    CardNumber= entity.CardNumber,
-                    Cardholder= entity.Cardholder,
+                    CardNumber = entity.CardNumber,
+                    Cardholder = entity.Cardholder,
                     ExpirationDate = entity.ExpirationDate,
                     Balance = entity.Balance,
                     Currency = entity.Currency.ShortName
                 };
+                return (vm, WalletState.Ok);
             }
             catch (Exception ex)
             {
-                return null;
+                return (null, WalletState.Error);
             }
         }
 
-        public Task<bool> DeleteAsync(int id)
+        public async Task<WalletState> DeleteAsync(User user, int id)
         {
-            throw new NotImplementedException();
+            var walletToDelete = await _context.Wallets
+                .Where(w => w.UserId == user.Id && w.Id == id)
+                .SingleOrDefaultAsync();
+
+            if (walletToDelete == null)
+                return WalletState.WalletNotExist;
+
+            _context.Remove(walletToDelete);
+            await _context.SaveChangesAsync();
+            return WalletState.Ok;
         }
 
-        public Task<List<TEntityVM>> GetAllAsync<TEntityVM>() where TEntityVM : IAssetVM
+        public async Task<List<WalletsVM>> GetAllAsync(User user)
         {
-            throw new NotImplementedException();
+            var userWallets = await _context.Wallets
+                .Where(w => w.UserId == user.Id)
+                .ToListAsync();
+
+            var walletsVm = new List<WalletsVM>();
+
+            foreach (var wallet in userWallets)
+            {
+                walletsVm.Add(new WalletsVM
+                {
+                    Id = wallet.Id,
+                    CardNumber = wallet.CardNumber,
+                    Cardholder = wallet.Cardholder,
+                    ExpirationDate = wallet.ExpirationDate,
+                    Balance = wallet.Balance
+                });
+            }
+
+            return walletsVm;
         }
 
         public async Task<WalletsVM> GetByIdAsync(int id)

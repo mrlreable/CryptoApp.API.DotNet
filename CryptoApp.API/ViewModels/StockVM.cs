@@ -8,6 +8,7 @@
         public virtual double Price { get; set; }
         public virtual double Spread { get; set; }
         public virtual double Change { get; set; }
-        public virtual string? Description { get; set; }
+        public virtual double? TotalPurchased { get; set; }
+        public string? Description { get; set; }
     }
 }

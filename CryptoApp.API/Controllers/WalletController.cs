@@ -24,20 +24,51 @@ namespace CryptoApp.API.Controllers
             _userManager = userManager;
         }
 
-        [HttpPost("wallet")]
+        [HttpPost("wallets")]
         [Authorize(Roles = UserRoles.AppUser)]
         public async Task<IActionResult> Post([FromBody] NewWalletDto walletDto)
         {
             var currentUser = await _userManager.GetUserAsync(HttpContext.User);
-            var createdWallet = await _walletService.CreateAsync(currentUser.Id, walletDto);
+            var (createdWallet, message) = await _walletService.CreateAsync(currentUser.Id, walletDto);
 
-            if (createdWallet == null)
-                return NotFound();
+            if (message == Common.WalletState.CurrencyNotExist)
+                return StatusCode(StatusCodes.Status404NotFound,
+                    new { State = "Error", Message = "Wallet adding failed. Currency does not exist." });
+
+            if (message == Common.WalletState.WalletExists)
+                return StatusCode(StatusCodes.Status400BadRequest,
+                    new { State = "Error", Message = "Wallet adding failed. Wallet already exists." });
 
             return CreatedAtAction(nameof(GetById), new { createdWallet.Id }, createdWallet);
         }
 
-        [HttpGet("wallet/{id}")]
+        [HttpGet("wallets")]
+        [Authorize(Roles = UserRoles.AppUser)]
+        public async Task<IEnumerable<WalletsVM>> GetAll()
+        {
+            var currentUser = await _userManager.GetUserAsync(HttpContext.User);
+
+            return await _walletService.GetAllAsync(currentUser);
+        }
+
+        [HttpDelete("wallets/{id}")]
+        [Authorize(Roles = UserRoles.AppUser)]
+        public async Task<IActionResult> Delete(int id)
+        {
+            var user = await _userManager.GetUserAsync(HttpContext.User);
+
+            var result = await _walletService.DeleteAsync(user, id);
+
+            if (result == Common.WalletState.WalletNotExist)
+                return StatusCode(StatusCodes.Status204NoContent,
+                    new { Status = "No content", Message = "Wallet requested for deletion does not exist." });
+
+            return StatusCode(StatusCodes.Status200OK,
+                new { Status = "OK", Message = "Wallet successfully deleted." });
+        }
+
+        [HttpGet("wallets/{id}")]
+        [Authorize(Roles = UserRoles.AppUser)]
         public async Task<IActionResult> GetById(int id)
         {
             var result = await _walletService.GetByIdAsync(id);

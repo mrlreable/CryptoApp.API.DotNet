@@ -6,5 +6,6 @@
         public string AssetName { get; set; }
         public string AssetShortName { get; set; }
         public double Amount { get; set; }
+        public double Total { get; set; }
     }
 }

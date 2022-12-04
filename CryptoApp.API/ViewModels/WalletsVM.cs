@@ -10,6 +10,6 @@ namespace CryptoApp.API.ViewModels
         public virtual DateTime ExpirationDate { get; set; }
         public virtual double Balance { get; set; }
         [Ignore]
-        public virtual string Currency { get; set; }
+        public virtual string? Currency { get; set; }
     }
 }

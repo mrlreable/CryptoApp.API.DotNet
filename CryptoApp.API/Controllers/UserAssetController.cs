@@ -2,6 +2,7 @@
 using CryptoApp.API.Models;
 using CryptoApp.API.Services;
 using CryptoApp.API.ViewModels;
+using CryptoApp.Common;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
@@ -27,34 +28,46 @@ namespace CryptoApp.API.Controllers
         }
 
         // GET: api/<UserAssetController>
-        [HttpGet("stocks")]
-        public async Task<IEnumerable<StockVM>> Get()
+        [HttpGet("userStocks/all")]
+        [Authorize(Roles = UserRoles.AppUser)]
+        public async Task<IEnumerable<StockVM>> GetAll()
         {
             var user = await _userManager.GetUserAsync(HttpContext.User);
             return await _assetService.GetAllStocksAsync(user.Id);
         }
 
         // POST api/<UserAssetController>
-        [HttpPost("buy/stocks")]
+        [HttpPost("purchase/stocks")]
         [Authorize(Roles = UserRoles.AppUser)]
-        public async Task<IActionResult> Post([FromBody] BuyAssetDto buyAssetDto)
+        public async Task<IActionResult> Purchase([FromBody] BuyAssetDto buyAssetDto)
         {
             var user = await _userManager.GetUserAsync(HttpContext.User);
 
-            var result = await _assetService.BuyStockAsync(user, buyAssetDto);
+            var (vm, message) = await _assetService.BuyAssetAsync(user, buyAssetDto);
 
-            if (result == null)
-            {
-                return BadRequest();
-            }
+            if (message == UserAssetState.InvalidAmount)
+                return StatusCode(StatusCodes.Status400BadRequest,
+                    new { Status = "Error", Message = "Purchase failed. Amount has to be greater than 0." });
 
-            return CreatedAtAction(nameof(GetById), new { user.Id, result.AssetId }, result);
+            if (message == UserAssetState.NotEnoughBalance)
+                return StatusCode(StatusCodes.Status400BadRequest,
+                    new { Status = "Error", Message = "Purchase failed. Wallet has no sufficient amount to purchase." });
+
+            if (message == UserAssetState.WalletNotExist)
+                return StatusCode(StatusCodes.Status400BadRequest,
+                    new { Status = "Error", Message = "Purchase failed. User has no wallet added." });
+
+            if (message == UserAssetState.StockNotExist)
+                return StatusCode(StatusCodes.Status404NotFound,
+                    new { Status = "Error", Message = "Purchase failed. Stock does not exist or it is not supported to trade." });
+
+            return CreatedAtAction(nameof(GetUserAssetById), new { user.Id, vm.AssetId }, vm);
         }
 
-        [HttpGet("userAsset/assetId")]
-        public async Task<IActionResult> GetById(string userId, int assetId)
+        [HttpGet("userAsset")]
+        public async Task<IActionResult> GetUserAssetById(string userId, int assetId)
         {
-            var result = await _assetService.GetByIdAsync(userId, assetId);
+            var result = await _assetService.GetByIdsAsync(userId, assetId);
             if (result == null)
             {
                 return NotFound();
@@ -63,15 +76,34 @@ namespace CryptoApp.API.Controllers
         }
 
         // PUT api/<UserAssetController>/5
-        [HttpPut("{id}")]
-        public void Put(int id, [FromBody] string value)
+        [HttpPut("sell/stocks")]
+        [Authorize(Roles = UserRoles.AppUser)]
+        public async Task<IActionResult> Put([FromBody] BuyAssetDto assetDto)
         {
-        }
+            var user = await _userManager.GetUserAsync(HttpContext.User);
+            var (vm, message) = await _assetService.SellAsync(user, assetDto);
 
-        // DELETE api/<UserAssetController>/5
-        [HttpDelete("{id}")]
-        public void Delete(int id)
-        {
+            if (message == UserAssetState.NotEnoughBalance)
+                return StatusCode(StatusCodes.Status400BadRequest,
+                    new { Status = "Error", Message = "Purchase failed. Amount to be sold exceeds the balance." });
+
+            if (message == UserAssetState.InvalidAmount)
+                return StatusCode(StatusCodes.Status400BadRequest,
+                    new { Status = "Error", Message = "Purchase failed. Amount has to be greater than 0." });
+
+            if (message == UserAssetState.UserAssetNotExist)
+                return StatusCode(StatusCodes.Status404NotFound,
+                    new { Status = "Error", Message = "Purchase failed. User has no amount to sell." });
+
+            if (message == UserAssetState.WalletNotExist)
+                return StatusCode(StatusCodes.Status400BadRequest,
+                    new { Status = "Error", Message = "Purchase failed. User has no wallet added." });
+
+            if (message == UserAssetState.StockNotExist)
+                return StatusCode(StatusCodes.Status404NotFound,
+                    new { Status = "Error", Message = "Purchase failed. Stock Id does not exist." });
+
+            return CreatedAtAction(nameof(GetUserAssetById), new { user.Id, vm.AssetId }, vm);
         }
     }
 }

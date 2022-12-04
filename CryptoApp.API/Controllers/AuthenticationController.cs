@@ -34,7 +34,7 @@ namespace CryptoApp.API.Controllers
             if (existingUser != null)
             {
                 return StatusCode(StatusCodes.Status500InternalServerError,
-                    new { Status = "Error", Message = "User creation failed. There is a user registered with this email." });
+                    new { Status = "Error", Message = "User creation failed. There is a user registered with this email or username." });
             }
 
             var newUser = new User

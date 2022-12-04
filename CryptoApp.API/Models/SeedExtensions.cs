@@ -20,10 +20,12 @@ namespace CryptoApp.API.Models
                 var adminUser = new User
                 {
                     UserName = "admin",
-                    Email = "admin@gmail.com"
+                    Email = "admin@gmail.com",
+                    SecurityStamp = Guid.NewGuid().ToString()
                 };
 
                 userManager.CreateAsync(adminUser, "Admin123!").Wait();
+                userManager.AddToRoleAsync(adminUser, UserRoles.Admin).Wait();
             }
 
             return host;
